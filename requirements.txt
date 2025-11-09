@@ -2,3 +2,4 @@ Flask
 matplotlib
 reportlab
 pytest
+fpdf
