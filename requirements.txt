@@ -1,4 +1,1 @@
-flask==3.0.2
-gunicorn==21.2.0
-pytest==8.3.3
-matplotlib
+Flask
