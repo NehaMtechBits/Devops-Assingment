@@ -1,0 +1,76 @@
+# This file exposes your application to the outside world
+apiVersion: v1
+kind: Service
+metadata:
+  name: aceest-service # The name of the service
+spec:
+  # 'NodePort' makes the app accessible on a port on your cluster's nodes.
+  # This is the easiest way to get an "endpoint URL" for your assignment.
+  type: NodePort 
+  selector:
+    app: aceest-fitness # This matches the labels on your pods
+  ports:
+  - protocol: TCP
+    port: 80 # The port *within* the cluster
+    targetPort: 5000 # The port on your *container*
+    # nodePort: 30007 # (Optional) You can specify a port, or let K8s pick one
+```
+
+---
+
+### ⚠️ **CRITICAL: Required Jenkins Setup**
+
+Your `Jenkinsfile` will fail unless you configure Jenkins first.
+
+1.  **Install Jenkins Plugins:**
+    * Go to **Manage Jenkins** -> **Plugins** -> **Available**.
+    * Install:
+        * `Pipeline` (usually installed by default)
+        * `Git` (usually installed by default)
+        * `SonarQube Scanner for Jenkins`
+        * `Docker Pipeline`
+        * `Kubernetes CLI`
+
+2.  **Add Credentials:**
+    * Go to **Manage Jenkins** -> **Credentials** -> **System** -> **Global credentials**.
+    * **Docker Hub:**
+        * Click **Add Credentials**.
+        * Kind: `Username with password`.
+        * Username: `your-dockerhub-username`
+        * Password: `your-dockerhub-password`
+        * **ID:** `dockerhub-creds` (This MUST match the `Jenkinsfile`).
+    * **Kubernetes:**
+        * Click **Add Credentials**.
+        * Kind: `KubeConfig` (or `Secret file` if KubeConfig isn't an option).
+        * Upload your `~/.kube/config` file.
+        * **ID:** `kubeconfig` (This MUST match the `Jenkinsfile`).
+
+3.  **Configure Tools:**
+    * Go to **Manage Jenkins** -> **Tools**.
+    * Find **SonarQube Scanner** -> **Add SonarQube Scanner**.
+    * Name: `SonarScanner` (This MUST match the `Jenkinsfile`).
+    * Select "Install automatically."
+
+4.  **Configure System:**
+    * Go to **Manage Jenkins** -> **System**.
+    * Find **SonarQube servers** -> **Add SonarQube**.
+    * Name: `SonarQubeServer` (This MUST match the `Jenkinsfile`).
+    * Server URL: `http://localhost:9000` (or
+        wherever your SonarQube is running).
+
+---
+
+### Your Next Steps
+
+1.  **Create/Update Files:**
+    * Create the `Jenkinsfile` in your project root.
+    * Create the `k8s` folder.
+    * Inside `k8s`, create `deployment.yaml` and `service.yaml`.
+2.  **Edit the Files:**
+    * In `Jenkinsfile`: Replace `httpsENTER_YOUR_GITHUB_REPO_URL_HERE` and both instances of `your-dockerhub-username`.
+    * In `k8s/deployment.yaml`: Replace `your-dockerhub-username`.
+3.  **Commit and Push:**
+    ```bash
+    git add Jenkinsfile k8s/deployment.yaml k8s/service.yaml
+    git commit -m "Add Jenkinsfile and Kubernetes manifests for CI/CD"
+    git push
