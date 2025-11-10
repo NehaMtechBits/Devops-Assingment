@@ -10,7 +10,7 @@ pipeline {
         // Clones your Git repository
         stage('1. Checkout Code') {
             steps {
-                git branch: 'main', url: 'httpsENTER_YOUR_GITHUB_REPO_URL_HERE'
+                git branch: 'main', url: 'https://github.com/NehaMtechBits/Devops-Assingment'
             }
         }
 
@@ -50,7 +50,7 @@ pipeline {
                 sh 'echo "--- Building Docker Image ---"'
                 // We tag the image with the unique Git commit hash and 'latest'
                 // !! REPLACE 'your-dockerhub-username' with your actual username !!
-                sh 'docker build -t your-dockerhub-username/aceest-fitness:${GIT_COMMIT} -t your-dockerhub-username/aceest-fitness:latest .'
+                sh 'docker build -t nehapandya/aceest-fitness:${GIT_COMMIT} -t nehapandya/aceest-fitness:latest .'
             }
         }
 
@@ -59,7 +59,7 @@ pipeline {
         stage('5. Push to Docker Hub') {
             steps {
                 // 'dockerhub-creds' is the ID you set up in Jenkins Credentials
-                withCredentials([usernamePassword(credentialsId: 'dockerhub-creds', usernameVariable: 'DOCKER_USER', passwordVariable: 'DOCKER_PASS')]) {
+                withCredentials([usernamePassword(credentialsId: 'dockerhub-creds', usernameVariable: 'nehapandya', passwordVariable: 'Mamra#7041')]) {
                     sh 'echo "--- Logging into Docker Hub ---"'
                     sh 'echo $DOCKER_PASS | docker login -u $DOCKER_USER --password-stdin'
                     
