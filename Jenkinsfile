@@ -5,9 +5,18 @@ pipeline {
 
     // 2. Stages: The steps of our pipeline
     stages {
+        
+        // --- NEW STAGE: INSTALL DOCKER ---
+        // We must do this because the official jenkins:lts image
+        // does not include the 'docker' command.
+        stage('0. Install Docker Client') {
+            steps {
+                user('root')
+                sh 'apt-get update && apt-get install -y docker.io'
+            }
+        }
 
         // --- STAGE 1: CHECKOUT ---
-        // Clones your Git repository
         stage('1. Checkout Code') {
             steps {
                 git branch: 'main', url: 'https://github.com/NehaMtechBits/Devops-Assingment'
@@ -15,33 +24,25 @@ pipeline {
         }
 
         // --- STAGE 2: RUN UNIT TESTS ---
-        // Runs the Pytest-based tests. If this fails, the pipeline stops.
+        // This stage now runs inside its own temporary Docker container
         stage('2. Run Unit Tests') {
             agent {
-        // Use an official Python 3.9 image as the agent
-        // Jenkins will automatically pull this image
-        docker { image 'python:3.9-slim' }
+                // Use an official Python 3.9 image
+                docker { image 'python:3.9-slim' }
             }
             steps {
                 sh 'echo "--- Installing dependencies ---"'
-                // 'python' and 'pip' are guaranteed to exist in this container
-                // We use 'pip' directly
                 sh 'pip install -r requirements.txt'
-
+                
                 sh 'echo "--- Running Pytest ---"'
-                // We use 'pytest' directly
                 sh 'pytest'
             }
         }
 
         // --- STAGE 3: SONARQUBE ANALYSIS ---
-        // Runs static code analysis. Assumes you have SonarQube setup.
         stage('3. SonarQube Analysis') {
             steps {
                 script {
-                    // 'SonarScanner' is the name from Jenkins Global Tool Config
-                    // 'SonarQubeServer' is the name from Jenkins Configure System
-                    // This step requires the sonar-project.properties file
                     def sonar = tool 'SonarScanner' 
                     withSonarQubeEnv('SonarQubeServer') {
                         sh "${sonar}/bin/sonar-scanner"
@@ -51,45 +52,37 @@ pipeline {
         }
 
         // --- STAGE 4: BUILD DOCKER IMAGE ---
-        // Builds the image using your Dockerfile
         stage('4. Build Docker Image') {
             steps {
                 sh 'echo "--- Building Docker Image ---"'
-                // We tag the image with the unique Git commit hash and 'latest'
-                // !! REPLACE 'your-dockerhub-username' with your actual username !!
-                sh 'docker build -t nehapandya/aceest-fitness:${GIT_COMMIT} -t nehapandya/aceest-fitness:latest .'
+                // !! REPLACE 'nehamtechbits' with your Docker Hub username !!
+                sh 'docker build -t nehamtechbits/aceest-fitness:${GIT_COMMIT} -t nehamtechbits/aceest-fitness:latest .'
             }
         }
 
         // --- STAGE 5: PUSH TO DOCKER HUB ---
-        // Logs into Docker Hub and pushes the image
         stage('5. Push to Docker Hub') {
             steps {
-                // 'dockerhub-creds' is the ID you set up in Jenkins Credentials
-                withCredentials([usernamePassword(credentialsId: 'dockerhub-creds', usernameVariable: 'nehapandya', passwordVariable: 'Mamra#7041')]) {
+                withCredentials([usernamePassword(credentialsId: 'dockerhub-creds', usernameVariable: 'DOCKER_USER', passwordVariable: 'DOCKER_PASS')]) {
                     sh 'echo "--- Logging into Docker Hub ---"'
                     sh 'echo $DOCKER_PASS | docker login -u $DOCKER_USER --password-stdin'
                     
                     sh 'echo "--- Pushing Image ---"'
-                    // !! REPLACE 'your-dockerhub-username' with your actual username !!
-                    sh 'docker push your-dockerhub-username/aceest-fitness:latest'
-                    sh 'docker push your-dockerhub-username/aceest-fitness:${GIT_COMMIT}'
+                    // !! REPLACE 'nehamtechbits' with your Docker Hub username !!
+                    sh 'docker push nehamtechbits/aceest-fitness:latest'
+                    sh 'docker push nehamtechbits/aceest-fitness:${GIT_COMMIT}'
                 }
             }
         }
 
         // --- STAGE 6: DEPLOY TO KUBERNETES ---
-        // Applies the Kubernetes .yaml files to deploy the app
         stage('6. Deploy to Kubernetes') {
             steps {
-                // 'kubeconfig' is the ID for your Kubernetes config credential
                 withKubeConfig([credentialsId: 'kubeconfig']) {
                     sh 'echo "--- Applying Kubernetes manifests ---"'
-                    // This command applies all .yaml files in the k8s/ directory
                     sh 'kubectl apply -f k8s/'
                     
                     sh 'echo "--- Waiting for deployment to complete ---"'
-                    // This waits for the new version to be live
                     sh 'kubectl rollout status deployment/aceest-deployment'
                     
                     sh 'echo "--- Deployment Successful! ---"'
