@@ -20,10 +20,10 @@ pipeline {
             steps {
                 sh 'echo "--- Installing dependencies ---"'
                 // We use python -m to avoid PATH issues
-                sh 'python -m pip install -r requirements.txt'
+                sh 'python3 -m pip install -r requirements.txt'
                 
                 sh 'echo "--- Running Pytest ---"'
-                sh 'python -m pytest'
+                sh 'python3 -m pytest'
             }
         }
 
