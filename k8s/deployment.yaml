@@ -14,8 +14,8 @@ spec:
         app: aceest-fitness # The label for your pods
     spec:
       containers:
-      - name: aceest-app-container
-        # !! REPLACE 'your-dockerhub-username' !!
-        image: your-dockerhub-username/aceest-fitness:latest # The image to pull
-        ports:
-        - containerPort: 5000 # The port Flask is running on (from gunicorn)
+        - name: aceest-app-container
+          # !! REPLACE 'your-dockerhub-username' !!
+          image: nehabpandya/aceest-fitness:latest # The image to pull
+          ports:
+            - containerPort: 5000 # The port Flask is running on (from gunicorn)

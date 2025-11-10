@@ -58,21 +58,21 @@ pipeline {
             steps {
                 sh 'echo "--- Building Docker Image ---"'
                 // !! REPLACE 'nehamtechbits' with your Docker Hub username !!
-                sh 'docker build -t nehamtechbits/aceest-fitness:${GIT_COMMIT} -t nehamtechbits/aceest-fitness:latest .'
+                sh 'docker build -t nehabpandya/aceest-fitness:${GIT_COMMIT} -t nehabpandya/aceest-fitness:latest .'
             }
         }
 
         // --- STAGE 5: PUSH TO DOCKER HUB ---
         stage('5. Push to Docker Hub') {
             steps {
-                withCredentials([usernamePassword(credentialsId: 'dockerhub-creds', usernameVariable: 'DOCKER_USER', passwordVariable: 'DOCKER_PASS')]) {
+                withCredentials([usernamePassword(credentialsId: 'dockerhub-creds', usernameVariable: 'nehapandya', passwordVariable: 'Mamra#7041')]) {
                     sh 'echo "--- Logging into Docker Hub ---"'
                     sh 'echo $DOCKER_PASS | docker login -u $DOCKER_USER --password-stdin'
                     
                     sh 'echo "--- Pushing Image ---"'
                     // !! REPLACE 'nehamtechbits' with your Docker Hub username !!
-                    sh 'docker push nehamtechbits/aceest-fitness:latest'
-                    sh 'docker push nehamtechbits/aceest-fitness:${GIT_COMMIT}'
+                    sh 'docker push nehapandya/aceest-fitness:latest'
+                    sh 'docker push nehapandya/aceest-fitness:${GIT_COMMIT}'
                 }
             }
         }
