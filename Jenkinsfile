@@ -6,13 +6,15 @@ pipeline {
     // 2. Stages: The steps of our pipeline
     stages {
         
-        // --- NEW STAGE: INSTALL DOCKER ---
-        // We must do this because the official jenkins:lts image
-        // does not include the 'docker' command.
-        stage('0. Install Docker Client') {
+        // --- NEW STAGE: INSTALL DOCKER & KUBECTL ---
+        // We run this as root (which we set in the docker run command)
+        // to install the CLIs we need.
+        stage('0. Install Tools') {
             steps {
-                user('root')
-                sh 'apt-get update && apt-get install -y docker.io'
+                // --- FIX 1: 'user' command now wraps the 'sh' command ---
+                user('root') {
+                    sh 'apt-get update && apt-get install -y docker.io kubectl'
+                }
             }
         }
 
@@ -63,7 +65,8 @@ pipeline {
         // --- STAGE 5: PUSH TO DOCKER HUB ---
         stage('5. Push to Docker Hub') {
             steps {
-                withCredentials([usernamePassword(credentialsId: 'dockerhub-creds', usernameVariable: 'DOCKER_USER', passwordVariable: 'DOCKER_PASS')]) {
+                // --- FIX 2: Variable names now match the sh script ---
+                withCredentials([usernamePassword(credentialsId: 'dockerhub-creds', usernameVariable: 'nehapandya', passwordVariable: 'Mamra#7041')]) {
                     sh 'echo "--- Logging into Docker Hub ---"'
                     sh 'echo $DOCKER_PASS | docker login -u $DOCKER_USER --password-stdin'
                     
@@ -91,3 +94,13 @@ pipeline {
         }
     }
 }
+```
+
+### What To Do Now
+
+1.  **Replace** the code in your `Jenkinsfile` with the corrected code above.
+2.  **Commit and push** this fix:
+    ```bash
+    git add Jenkinsfile
+    git commit -m "Fix: Correct user() syntax and docker credentials in Jenkinsfile"
+    git push origin main
