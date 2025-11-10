@@ -17,13 +17,20 @@ pipeline {
         // --- STAGE 2: RUN UNIT TESTS ---
         // Runs the Pytest-based tests. If this fails, the pipeline stops.
         stage('2. Run Unit Tests') {
+            agent {
+        // Use an official Python 3.9 image as the agent
+        // Jenkins will automatically pull this image
+        docker { image 'python:3.9-slim' }
+            }
             steps {
                 sh 'echo "--- Installing dependencies ---"'
-                // We use python -m to avoid PATH issues
-                sh 'python3 -m pip install -r requirements.txt'
-                
+                // 'python' and 'pip' are guaranteed to exist in this container
+                // We use 'pip' directly
+                sh 'pip install -r requirements.txt'
+
                 sh 'echo "--- Running Pytest ---"'
-                sh 'python3 -m pytest'
+                // We use 'pytest' directly
+                sh 'pytest'
             }
         }
 
