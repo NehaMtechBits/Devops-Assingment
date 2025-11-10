@@ -11,10 +11,10 @@ pipeline {
         // to install the CLIs we need.
         stage('0. Install Tools') {
             steps {
-                // --- FIX 1: 'user' command now wraps the 'sh' command ---
-                user('root') {
-                    sh 'apt-get update && apt-get install -y docker.io kubectl'
-                }
+                // We can run apt-get because we started the container as root
+                sh 'apt-get update'
+                sh 'apt-get install -y docker.io'
+                sh 'apt-get install -y kubectl'
             }
         }
 
@@ -65,8 +65,7 @@ pipeline {
         // --- STAGE 5: PUSH TO DOCKER HUB ---
         stage('5. Push to Docker Hub') {
             steps {
-                // --- FIX 2: Variable names now match the sh script ---
-                withCredentials([usernamePassword(credentialsId: 'dockerhub-creds', usernameVariable: 'nehapandya', passwordVariable: 'Mamra#7041')]) {
+                withCredentials([usernamePassword(credentialsId: 'dockerhub-creds', usernameVariable: 'DOCKER_USER', passwordVariable: 'DOCKER_PASS')]) {
                     sh 'echo "--- Logging into Docker Hub ---"'
                     sh 'echo $DOCKER_PASS | docker login -u $DOCKER_USER --password-stdin'
                     
